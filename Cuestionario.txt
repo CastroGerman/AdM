@@ -1,0 +1,36 @@
+Cortex M.
+1. El M0 posee arquitectura ARMv6-M y arquitectura de memoria Von Neumann (bus unico). Tampoco posee MPU. Solo instrucciones
+de 32 bits y no soporta todo el set de instrucciones Thumb. 
+El M3 posee arquitectura ARMv7-M y arquitectura harvard. Instrucciones hasta 64 bits y soporta Thumb.
+El M4 posee arquitectura ARMv7E-M y arquitectura harvard. Instrucciones hasta 64 bits y soporta Thumb. 
+Tiene posibilidad de agregar memoria cache al CPU y agregar FPU junto a extension DSP.
+
+2. Porque permite realizar algunas instrucciones mas complejas "compactando" el codigo. Un ejemplo son las instrucciones
+IT (if-then) que permiten hacer condicionales hasta a 4 instrucciones siguientes, cambiando su tipo de encoding en
+la arquitectura (generalmente de T1/T2 a T3/T4).
+
+3. Una arquitectura Load-Store hace referencia a que su set de instrucciones se divide en 2 tipos,
+de acceso a memoria (load y store entre memoria y registros) y de operaciones ALU (solo entre registros).
+
+4. Para Cortex M el mapa de memoria es plano de 4GB. El mismo se divide en las regiones: System, Private Peripheral Bus
+(PPB) External (ROM table), PPB Internal (NVIC), external device, external RAM, peripheral, SRAM, Code.
+
+8. Permite hacer condicionales hasta a 4 instrucciones posteriores, esto tiene como ventaja no utilizar instrucciones
+de salto. Ej: realizar la negacion logica del registro r7 (r7 = !r7)
+cmp	r7, #0	
+ite	eq	
+moveq.w	r7, #1	
+movne.w	r7, #0	
+uxtb	r7, r7	
+
+17. Es el temporizador de referencia del SO. Favorece la portabilidad ya que se pretende una implementacion
+para estandarizar sus cualidades y usos.
+
+18. Se encarga de designar regiones de memoria privilegiada y no privilegiada, restringiendo el acceso de una
+region no privilegiada hacia una privilegiada. 
+
+
+ISA.
+3. Agilizar las operaciones para algunas aplicaciones particulares o si el desborde es indeseado. Ej: 0xFF+0x01=0xFF
+
+
