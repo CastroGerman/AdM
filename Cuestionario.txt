@@ -15,6 +15,10 @@ de acceso a memoria (load y store entre memoria y registros) y de operaciones AL
 4. Para Cortex M el mapa de memoria es plano de 4GB. El mismo se divide en las regiones: System, Private Peripheral Bus
 (PPB) External (ROM table), PPB Internal (NVIC), external device, external RAM, peripheral, SRAM, Code.
 
+7. Que todos* los registros son de proposito general y pueden ser parametros de las instrucciones.
+(*): Algunos almacenan informacion importante que es preferible no tocar (pc, stack, lr).
+Ej: sub r7, r7, r6
+
 8. Permite hacer condicionales hasta a 4 instrucciones posteriores, esto tiene como ventaja no utilizar instrucciones
 de salto. Ej: realizar la negacion logica del registro r7 (r7 = !r7)
 cmp	r7, #0	
@@ -22,6 +26,18 @@ ite	eq
 moveq.w	r7, #1	
 movne.w	r7, #0	
 uxtb	r7, r7	
+
+9. La secuencia en la tabla de vectores de interrupcion, desde la mas prioritaria a la menos prioritaria, es: Reset, NMI, HardFault.
+Reset: Es la rutina que se ejecuta cuando el chip es reiniciado.
+NMI: Son irqs que no pueden ser enmascaradas (ergo deshabilitadas). Si ocurre un error en otro handler, se dispara un NMI.
+HardFault: Excepcion generica para fallas del systema. Ej: Mal acceso a memoria, acceso ilegal no alineado, divicion por 0.
+
+12. Son perifericos que impactan directamente en el comportamiento de la arquitectura.
+Ej: NVIC, SysTick, MPU.
+
+13. Se implementan sobre un array, las irqs ubicadas en los indices menores representan una mayor prioridad.
+
+14. Es un estandar provisto por ARM para otorgar portabilidad de software sobre sus distintas arquitecturas.
 
 17. Es el temporizador de referencia del SO. Favorece la portabilidad ya que se pretende una implementacion
 para estandarizar sus cualidades y usos.
