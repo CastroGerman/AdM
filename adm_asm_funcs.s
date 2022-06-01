@@ -66,15 +66,11 @@ productoEscalar16_asm:
 	.type	productoEscalar12_asm, %function
 productoEscalar12_asm:
 	push {r4-r5}
-	mov r4, #0
 	mov r5, #0x0FFF
 .productoEscalar12_asm_L1:
 	ldrh	r4, [r0], #2
 	mul 	r4, r4, r3
-	cmp		r4, r5
-	bls		.productoEscalar12_asm_L2 @HI = Unsigned Lower or Same
-	mov r4, #0x0FFF
-.productoEscalar12_asm_L2:
+	usat	r4, 12, r4	@unsigned sat a 12 bits.
 	strh	r4, [r1], #2
 	subs r2, 1
 	bne .productoEscalar12_asm_L1
