@@ -47,6 +47,16 @@ region no privilegiada hacia una privilegiada.
 
 
 ISA.
+1. Son extensiones condicionales en los nemonicos. Ej:
+moveq r7, #0 @mueve 0 a r7 solo si Z = 0.
+
+2. Para que la instruccion pueda modificar los flags de control. Ej:
+subs r7, r7 @Z = 0.
+
 3. Agilizar las operaciones para algunas aplicaciones particulares o si el desborde es indeseado. Ej: 0xFF+0x01=0xFF
 
-
+4. La relación esta definida por el fabricante en su ABI (Application Binary Interface). Para ARM se utiliza AAPCS que indica
+que los parametros de la funcion llamadora se pasan desde r0 a r3, el resto de parametros se pasa por stack. El resultado se 
+devuelve en r0 para longitudes menores o iguales a 32 bits, si es de 64 bits se pasan los 32 bits mas significativos en r1.
+Los registros que no son necesario guardar antes de modificarlos en una funcion son r0, r1, r2 y r3, ya que son responsabilidad
+del caller, el resto son responsabilidad del callee.  
