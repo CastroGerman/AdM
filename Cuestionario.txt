@@ -32,6 +32,13 @@ Reset: Es la rutina que se ejecuta cuando el chip es reiniciado.
 NMI: Son irqs que no pueden ser enmascaradas (ergo deshabilitadas). Si ocurre un error en otro handler, se dispara un NMI.
 HardFault: Excepcion generica para fallas del systema. Ej: Mal acceso a memoria, acceso ilegal no alineado, divicion por 0.
 
+10. La funcion de la pila es el alojamiento temporario de datos. La arquitectura resuelve el llamado a funciones escribiendo los
+parametros de la misma en registros de proposito general y/o el stack. El valor de retorno se devuelve en registros de proposito
+general. Este procedimiento esta definido en la ABI.
+
+11. El PC comienza en 0 de donde carga MSP, luego lee la proxima direccion que debe corresponder a la direccion del handler de reset.
+La ejecucion comienza en este handler, en donde se puede hacer un llamado a cualquier otra funcion, ej main.
+
 12. Son perifericos que impactan directamente en el comportamiento de la arquitectura.
 Ej: NVIC, SysTick, MPU.
 
@@ -39,12 +46,23 @@ Ej: NVIC, SysTick, MPU.
 
 14. Es un estandar provisto por ARM para otorgar portabilidad de software sobre sus distintas arquitecturas.
 
+15. El procesador verifica el vector de interrupciones para saber a donde buscar la subrutina y luego la
+ejecuta en modo privilegiado. Puede retornar como no, en caso de por Ej: un HardFault.
+
 17. Es el temporizador de referencia del SO. Favorece la portabilidad ya que se pretende una implementacion
 para estandarizar sus cualidades y usos.
 
 18. Se encarga de designar regiones de memoria privilegiada y no privilegiada, restringiendo el acceso de una
 region no privilegiada hacia una privilegiada. 
 
+19. Pueden haber secciones de codigo y datos. El solapamiento no esta protegido por la arquitectura, es 
+responsabilidad del programador. En caso de solapamiento se podria acceder a una seccion de codigo desde 
+una de datos y viceversa. Las zonas no cubiertas son ignoradas.
+
+20. La utiliza el SO para realizar cambios de contexto cuando ninguna otra excepcion esta activa. Ej: Cambio de tareas.
+
+21. La utiliza el SO para realizar una "supervisor call" y acceder a funciones de kernel y device drivers. 
+Ej: interrupcion para atender un periferico. 
 
 ISA.
 1. Son extensiones condicionales en los nemonicos. Ej:
@@ -60,3 +78,6 @@ que los parametros de la funcion llamadora se pasan desde r0 a r3, el resto de p
 devuelve en r0 para longitudes menores o iguales a 32 bits, si es de 64 bits se pasan los 32 bits mas significativos en r1.
 Los registros que no son necesario guardar antes de modificarlos en una funcion son r0, r1, r2 y r3, ya que son responsabilidad
 del caller, el resto son responsabilidad del callee.  
+
+5. Es una instruccion que permite realizar multiples operaciones por ciclos de clock. Se aplican en situaciones donde sea
+importante la velocidad de procesamiento. Ej: uhadd16 r1, r1, r0
