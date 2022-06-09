@@ -204,7 +204,7 @@ max_asm:
 	ldr		r5, [r3, r4, lsl #2]
 	ldr		r6, [r7, #8]
 	cmp		r5, r6
-	blt		.max_asm_L3
+	ble		.max_asm_L3
 	str		r5, [r7, #8]
 .max_asm_L3:
 	ldr		r2, [r7, #12]
@@ -293,14 +293,16 @@ invertir_asm:
 	udiv	r3, r3, r6
 	cmp		r2, r3
 	bge		.invertir_asm_L2
+	@aux = vector[i];
 	ldr		r2, [r7, #0]
 	ldr		r3, [r7, #12]
-	ldrh	r4, [r2, r3, lsl #1]
+	ldrh	r4, [r2, r3, lsl #1] @r4 = *(r2 + i<<1)
 	strh	r4, [r7, #8]
+	@vector[i] = vector[(longitud-1)-i];
 	ldr		r5, [r7, #4]
 	sub		r5, r5, #1
 	sub		r5, r5, r3
-	ldrh	r6, [r2, r5, lsl #1]
+	ldrh	r6, [r2, r5, lsl #1] @r6 = *(r2 + r5<<1); r5 = (long -1 -i)
 	strh	r6, [r2, r3, lsl #1]
 	ldrh	r6, [r7, #8]
 	strh	r6, [r2, r5, lsl #1]
@@ -315,3 +317,47 @@ invertir_asm:
 	pop 	{r4-r6}
 	bx		lr
 	.size	invertir_asm, .-invertir_asm
+
+@---------------------------------------------------
+	.align	2
+	.global	corr_asm
+	.type	corr_asm, %function
+corr_asm:
+	push 	{r4-r6, lr}
+	push	{r7}		@Syscall number
+	sub		sp, sp, #20
+	add		r7,	sp,	#0
+	str		r0, [r7, #0]	@vectorX
+	str		r1, [r7, #4]	@vectorY
+	str		r2, [r7, #8]	@vectorC
+	str		r3, [r7, #12]	@long
+	mov		r4, #0
+	str		r4, [r7, #16]	@i
+.corr_asm_L1:
+	ldr		r4, [r7, #16]
+	ldr		r3, [r7, #12]
+	cmp		r4, r3
+	bge		.corr_asm_L2
+	sub		r3, r3, #1
+	sub 	r3, r3, r4
+	ldr		r0, [r7, #0]
+	ldr		r1, [r7, #4]
+	ldr		r2, [r7, #8]
+	ldrh	r2, [r2]
+	ldr		r5, [r0, r4, lsl #1]
+	ldr		r6, [r1, r3, lsl #1]
+	mul		r5, r5, r6
+	@smuad	r5, r5, r6
+	add		r2, r2, r5
+	ldr		r6, [r7, #8]
+	strh	r2, [r6]
+	ldr		r2, [r7, #16]
+	add		r2, r2, #1
+	str		r2, [r7, #16]
+	b		.corr_asm_L1
+.corr_asm_L2:
+	add		r7, r7, #20
+	mov		sp, r7
+	pop 	{r7}
+	pop 	{r4-r6, pc}
+	.size	corr_asm, .-corr_asm
