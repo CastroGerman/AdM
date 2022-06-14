@@ -79,9 +79,12 @@ void invertir(uint16_t *vector, uint32_t longitud){
 	}
 }
 
-void corr(int16_t *vectorX, int16_t *vectorY, int16_t *vectorCorr, uint32_t longitud){
-	for(int i = 0; i < longitud; ++i){
-		*(vectorCorr) += vectorX[i] * vectorY[(longitud-1)-i];
+void corr(int16_t *vectorX, int16_t *vectorY, int32_t *vectorCorr, uint32_t longitud){
+	for(int l = 0; l < longitud; ++l){
+		for(int n = 0; n < longitud; ++n){
+			if((n-l) >= 0){
+				vectorCorr[l] += vectorX[n] * vectorY[n-l];
+			}
+		}
 	}
 }
-

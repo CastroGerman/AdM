@@ -325,39 +325,136 @@ invertir_asm:
 corr_asm:
 	push 	{r4-r6, lr}
 	push	{r7}		@Syscall number
-	sub		sp, sp, #20
+	sub		sp, sp, #24
 	add		r7,	sp,	#0
 	str		r0, [r7, #0]	@vectorX
 	str		r1, [r7, #4]	@vectorY
 	str		r2, [r7, #8]	@vectorC
 	str		r3, [r7, #12]	@long
 	mov		r4, #0
-	str		r4, [r7, #16]	@i
+	str		r4, [r7, #16]	@l
+	str		r4, [r7, #20]	@n
 .corr_asm_L1:
 	ldr		r4, [r7, #16]
 	ldr		r3, [r7, #12]
 	cmp		r4, r3
 	bge		.corr_asm_L2
-	sub		r3, r3, #1
-	sub 	r3, r3, r4
+	mov		r4, #0
+	str		r4, [r7, #20]
+.corr_asm_L3:
+	ldr		r4, [r7, #20]
+	ldr		r3, [r7, #12]
+	cmp		r4, r3
+	bge		.corr_asm_L4
+	ldr		r4, [r7, #20]
+	ldr		r3, [r7, #16]
+	subs	r5, r4, r3
+	blt		.corr_asm_L5
 	ldr		r0, [r7, #0]
 	ldr		r1, [r7, #4]
 	ldr		r2, [r7, #8]
-	ldrh	r2, [r2]
-	ldr		r5, [r0, r4, lsl #1]
-	ldr		r6, [r1, r3, lsl #1]
-	mul		r5, r5, r6
-	@smuad	r5, r5, r6
-	add		r2, r2, r5
-	ldr		r6, [r7, #8]
-	strh	r2, [r6]
+	ldrh	r0, [r0, r4, lsl #1]
+	sxth 	r0, r0
+	ldrh	r1, [r1, r5, lsl #1]
+	sxth	r1, r1
+	mul		r0, r0, r1
+	ldr		r1, [r2, r3, lsl #2]
+	add		r1, r1, r0
+	str		r1, [r2, r3, lsl #2]
+.corr_asm_L5:
+	ldr		r2, [r7, #20]
+	add		r2, r2, #1
+	str		r2, [r7, #20]
+	b		.corr_asm_L3
+.corr_asm_L4:
 	ldr		r2, [r7, #16]
 	add		r2, r2, #1
 	str		r2, [r7, #16]
 	b		.corr_asm_L1
 .corr_asm_L2:
-	add		r7, r7, #20
+	add		r7, r7, #24
 	mov		sp, r7
 	pop 	{r7}
 	pop 	{r4-r6, pc}
 	.size	corr_asm, .-corr_asm
+
+
+
+@---------------------------------------------------
+	.align	2
+	.global	corr_asm_simd
+	.type	corr_asm_simd, %function
+corr_asm_simd:
+	push 	{r4-r6, lr}
+	push	{r7}		@Syscall number
+	sub		sp, sp, #24
+	add		r7,	sp,	#0
+	str		r0, [r7, #0]	@vectorX
+	str		r1, [r7, #4]	@vectorY
+	str		r2, [r7, #8]	@vectorC
+	str		r3, [r7, #12]	@long
+	mov		r4, #0
+	str		r4, [r7, #16]	@l
+	str		r4, [r7, #20]	@n
+.corr_asm_simd_L1:
+	ldr		r4, [r7, #16]
+	ldr		r3, [r7, #12]
+	cmp		r4, r3
+	bge		.corr_asm_simd_L2
+	mov		r4, #0
+	str		r4, [r7, #20]
+.corr_asm_simd_L3:
+	ldr		r4, [r7, #20]
+	ldr		r3, [r7, #12]
+	cmp		r4, r3
+	bge		.corr_asm_simd_L4
+	ldr		r4, [r7, #20]
+	ldr		r3, [r7, #16]
+	subs	r5, r4, r3
+	blt		.corr_asm_simd_L7
+	ldr		r0, [r7, #0]
+	ldr		r1, [r7, #4]
+	ldr		r2, [r7, #8]
+	ldr		r0, [r0, r4, lsl #1] @ldrh	r0, [r0, r4, lsl #1]
+	@sxth 	r0, r0
+	ldr		r1, [r1, r5, lsl #1] @ldrh	r1, [r1, r5, lsl #1]
+	@sxth	r1, r1
+	smuad 	r6, r1, r0	@mul		r0, r0, r1
+	ldr		r1, [r2, r3, lsl #2]
+	add		r1, r1, r6 @add		r1, r1, r0
+	str		r1, [r2, r3, lsl #2]
+	b		.corr_asm_simd_L5
+.corr_asm_simd_L7:
+	mov		r5, #1
+	add		r4, r4, r5
+	subs	r5, r4, r3
+	blt		.corr_asm_simd_L5
+	ldr		r0, [r7, #0]
+	ldr		r1, [r7, #4]
+	ldr		r2, [r7, #8]
+	ldr		r0, [r0, r4, lsl #1]
+	ldr		r1, [r1, r5, lsl #1]
+	mov		r6, #0xFFFF
+	@mvn		r6, r6
+	and		r1, r1, r6
+	and		r0, r0, r6
+	smuad 	r6, r1, r0
+	ldr		r1, [r2, r3, lsl #2]
+	add		r1, r1, r6 @add		r1, r1, r0
+	str		r1, [r2, r3, lsl #2]
+.corr_asm_simd_L5:
+	ldr		r2, [r7, #20]
+	add		r2, r2, #2 @add		r2, r2, #1
+	str		r2, [r7, #20]
+	b		.corr_asm_simd_L3
+.corr_asm_simd_L4:
+	ldr		r2, [r7, #16]
+	add		r2, r2, #1
+	str		r2, [r7, #16]
+	b		.corr_asm_simd_L1
+.corr_asm_simd_L2:
+	add		r7, r7, #24
+	mov		sp, r7
+	pop 	{r7}
+	pop 	{r4-r6, pc}
+	.size	corr_asm_simd, .-corr_asm_simd
